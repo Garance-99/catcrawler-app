@@ -24,9 +24,9 @@ def get_soup(url):
         print(f"⏳ Timeout ou erreur réseau pour {url}")
         return None
 
-# 🔹 Extraction des articles avec debug complet
+# 🔹 Extraction des articles avec gestion de la page principale
 def fetch_articles(category_url, excluded_urls):
-    """🔍 Récupère les articles d'une catégorie en analysant toutes ses pages."""
+    """🔍 Récupère les articles d'une catégorie ou de la page principale en analysant toutes ses pages."""
     soup = get_soup(category_url)
     if not soup:
         return []
@@ -38,7 +38,7 @@ def fetch_articles(category_url, excluded_urls):
     print(f"📌 Début de l'extraction pour la catégorie : {category_url}")
 
     while pages_to_visit:
-        current_page = pages_to_visit.pop(0)  # On traite la première page de la liste
+        current_page = pages_to_visit.pop(0)
         if current_page in visited_pages:
             continue
 
@@ -49,7 +49,7 @@ def fetch_articles(category_url, excluded_urls):
 
         st.write(f"📖 Exploration de la page : [{current_page}]({current_page})")
 
-        # ✅ Extraction des articles
+        # ✅ Extraction des articles (y compris sur la page principale)
         for a_tag in soup.find_all("a", class_="button-read-more"):
             href = a_tag.get("href")
             if href and href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
@@ -96,13 +96,12 @@ def fetch_links_from_article(article_url, excluded_urls):
 st.set_page_config(page_title="Scraper MyES", page_icon="🌍", layout="wide")
 
 st.title("📰 Scraper MyES - Extraction d'articles")
-st.write("Entrez une URL de catégorie et récupérez automatiquement les articles et leurs liens internes.")
+st.write("Entrez une URL de catégorie (ou de la page principale du magazine) et récupérez automatiquement les articles et leurs liens internes.")
 
-category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.school/fr/magazine/vocabulaire-anglais/")
+category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.school/fr/magazine/")
 
 # ✅ Liste complète des URLs à exclure
 excluded_urls = [
-    "https://www.myes.school/fr/magazine/",
     "https://www.myes.school/fr/magazine/category/",
     "https://www.myes.school/fr/magazine/non-classifiee/",
 ]
