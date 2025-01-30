@@ -33,7 +33,7 @@ def fetch_articles(category_url, excluded_urls):
 
     articles = set()
     visited_pages = set()
-    pages_to_visit = [category_url]  # Liste FIFO des pages à explorer
+    pages_to_visit = [category_url]
 
     print(f"📌 Début de l'extraction pour la catégorie : {category_url}")
 
@@ -49,21 +49,18 @@ def fetch_articles(category_url, excluded_urls):
 
         st.write(f"📖 Exploration de la page : [{current_page}]({current_page})")
 
-        # ✅ Extraction des articles (y compris sur la page principale)
+        # ✅ Extraction des articles
         for a_tag in soup.find_all("a", class_="button-read-more"):
             href = a_tag.get("href")
             if href and href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
-                if href not in articles:
-                    print(f"✅ Article détecté : {href}")
-                    articles.add(href)
+                articles.add(href)
 
         # ✅ Recherche et correction des nouvelles pages de pagination
         for a_tag in soup.find_all("a", href=True):
             href = a_tag["href"]
             if re.search(r'/page/\d+/', href):
-                full_url = requests.compat.urljoin(category_url, href)  # Corrige les URLs relatives
+                full_url = requests.compat.urljoin(category_url, href)
                 if full_url not in visited_pages and full_url not in pages_to_visit:
-                    print(f"📖 Nouvelle page détectée : {full_url}")
                     pages_to_visit.append(full_url)
 
         time.sleep(0.5)  # Pause courte pour éviter les blocages
@@ -96,7 +93,7 @@ def fetch_links_from_article(article_url, excluded_urls):
 st.set_page_config(page_title="Scraper MyES", page_icon="🌍", layout="wide")
 
 st.title("📰 Scraper MyES - Extraction d'articles")
-st.write("Entrez une URL de catégorie (ou de la page principale du magazine) et récupérez automatiquement les articles et leurs liens internes.")
+st.write("Entrez une URL de catégorie (ou de la page principale du magazine) et récupérez les liens internes de chaque article.")
 
 category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.school/fr/magazine/")
 
@@ -111,11 +108,6 @@ if st.button("🔍 Lancer l'extraction"):
         articles = fetch_articles(category_url, excluded_urls)
 
         if articles:
-            st.success(f"✅ {len(articles)} articles trouvés !")
-            st.write("### 📋 Liste des articles extraits")
-            for article in articles:
-                st.markdown(f"- [{article}]({article})")
-
             for article in articles:
                 article_title = article.rstrip("/").split("/")[-1].replace("-", " ").capitalize()
                 st.markdown(f"### 🔗 Extraction des liens internes pour [**{article_title}**]({article})")
