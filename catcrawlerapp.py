@@ -80,23 +80,38 @@ def fetch_links_from_article(article_url, excluded_urls):
     if not soup:
         return []
 
-    links = set()
     print(f"🔍 Analyse des liens internes de l'article : {article_url}")
 
-    # ✅ Arrêter l'analyse avant la section <section class="unicoach-post-navigation">
+    # ✅ Vérifier si on trouve la section "unicoach-post-navigation"
     main_content = soup.find("section", class_="unicoach-post-navigation")
+
+    # ✅ Si on trouve cette section, on prend tout ce qui est avant
     if main_content:
         content_to_analyze = main_content.find_previous_sibling()
+        if not content_to_analyze:
+            content_to_analyze = soup  # Sécurité : si rien n'est trouvé, analyser tout
     else:
-        content_to_analyze = soup
+        content_to_analyze = soup  # Si la section n'existe pas, on analyse tout
 
-    # ✅ Récupérer uniquement les liens valides
+    # 🛠 Debug : Afficher le contenu analysé
+    print(f"📌 Contenu analysé pour {article_url}")
+
+    # ✅ Récupérer TOUS les liens trouvés
+    links = set()
     for a_tag in content_to_analyze.find_all("a", href=True):
-        href = a_tag["href"]
-        if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
-            links.add(href)
+        href = a_tag["href"].strip()  # Supprimer les espaces inutiles
+        links.add(href)
 
-    return list(links)
+    # ✅ Debug : Afficher tous les liens trouvés AVANT filtrage
+    print(f"📌 Liens trouvés (AVANT filtrage) pour {article_url} : {links}")
+
+    # ✅ Filtrage des liens valides
+    filtered_links = {link for link in links if link.startswith("https://www.myes.school/fr/magazine/") and link not in excluded_urls}
+
+    # ✅ Debug : Afficher tous les liens trouvés APRÈS filtrage
+    print(f"✅ Liens après filtrage pour {article_url} : {filtered_links}")
+
+    return list(filtered_links)
 
 # 🔹 Interface Streamlit
 st.set_page_config(page_title="Scraper MyES", page_icon="🌍", layout="wide")
@@ -136,19 +151,18 @@ if st.button("🔍 Lancer l'extraction"):
             for article in articles:
                 st.markdown(f"- [{article}]({article})")
 
-            all_links = {}
-            for i, article in enumerate(articles, start=1):
-                st.write(f"🔗 **Extraction des liens internes pour l'article {i}**...")
+            for article in articles:
+                # Extraire le titre depuis l'URL
+                article_title = article.rstrip("/").split("/")[-1].replace("-", " ").capitalize()
+
+                # Afficher une phrase avec un lien cliquable
+                st.markdown(f"### 🔗 Extraction des liens internes pour [**{article_title}**]({article})")
+
                 links = fetch_links_from_article(article, excluded_urls)
-                all_links[article] = links
 
-            st.write("## 📌 Résumé des liens internes trouvés")
-            for article, links in all_links.items():
-                st.markdown(f"### 🔗 [{article}]({article})")
-                for link in links:
-                    st.markdown(f"- [{link}]({link})")
-        else:
-            st.warning("⚠️ Aucun article trouvé. Vérifiez l'URL et réessayez.")
-
-st.sidebar.header("🔧 Paramètres")
-st.sidebar.write("💡 Ce scraper utilise Requests et BeautifulSoup pour extraire les données.")
+                if not links:
+                    st.warning(f"⚠️ Aucun lien interne trouvé pour cet article.")
+                else:
+                    st.write(f"🔗 **Liens internes trouvés ({len(links)}) :**")
+                    for link in links:
+                        st.markdown(f"- [{link}]({link})")
