@@ -14,7 +14,7 @@ def get_soup(url):
     }
 
     try:
-        response = requests.get(url, headers=headers, timeout=5)  # Timeout réduit à 5s
+        response = requests.get(url, headers=headers, timeout=5)
         if response.status_code == 200:
             return BeautifulSoup(response.text, 'html.parser')
         else:
@@ -24,9 +24,9 @@ def get_soup(url):
         print(f"⏳ Timeout ou erreur réseau pour {url}")
         return None
 
-# 🔹 Extraction des articles avec pagination complète
+# 🔹 Extraction des articles avec debug complet
 def fetch_articles(category_url, excluded_urls):
-    """🔍 Récupère les articles d'une catégorie en analysant toutes ses pages sans limite."""
+    """🔍 Récupère les articles d'une catégorie en analysant toutes ses pages."""
     soup = get_soup(category_url)
     if not soup:
         return []
@@ -35,7 +35,7 @@ def fetch_articles(category_url, excluded_urls):
     visited_pages = set()
     pages_to_visit = [category_url]  # Liste FIFO des pages à explorer
 
-    print(f"📌 Analyse de la catégorie : {category_url}")
+    print(f"📌 Début de l'extraction pour la catégorie : {category_url}")
 
     while pages_to_visit:
         current_page = pages_to_visit.pop(0)  # On traite la première page de la liste
@@ -53,18 +53,22 @@ def fetch_articles(category_url, excluded_urls):
         for a_tag in soup.find_all("a", class_="button-read-more"):
             href = a_tag.get("href")
             if href and href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
-                print(f"✅ Article détecté : {href}")
-                articles.add(href)
+                if href not in articles:
+                    print(f"✅ Article détecté : {href}")
+                    articles.add(href)
 
-        # ✅ Recherche de nouvelles pages de pagination
+        # ✅ Recherche et correction des nouvelles pages de pagination
         for a_tag in soup.find_all("a", href=True):
             href = a_tag["href"]
-            if re.search(r'/page/\d+/', href) and href not in visited_pages and href not in pages_to_visit:
-                print(f"📖 Nouvelle page détectée : {href}")
-                pages_to_visit.append(href)
+            if re.search(r'/page/\d+/', href):
+                full_url = requests.compat.urljoin(category_url, href)  # Corrige les URLs relatives
+                if full_url not in visited_pages and full_url not in pages_to_visit:
+                    print(f"📖 Nouvelle page détectée : {full_url}")
+                    pages_to_visit.append(full_url)
 
         time.sleep(0.5)  # Pause courte pour éviter les blocages
 
+    print(f"🔍 Extraction terminée. {len(articles)} articles trouvés.")
     return list(articles)
 
 # 🔹 Extraction des liens internes d'un article
