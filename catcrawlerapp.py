@@ -108,6 +108,8 @@ if st.button("🔍 Lancer l'extraction"):
         articles = fetch_articles(category_url, excluded_urls)
 
         if articles:
+            st.success(f"✅ {len(articles)} articles trouvés !")  # 🔥 Nombre d'articles affiché en cadre vert
+
             for article in articles:
                 article_title = article.rstrip("/").split("/")[-1].replace("-", " ").capitalize()
                 st.markdown(f"### 🔗 Extraction des liens internes pour [**{article_title}**]({article})")
