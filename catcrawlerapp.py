@@ -81,18 +81,21 @@ def fetch_links_from_article(article_url, excluded_urls):
 
     # Trouver la section de navigation pour limiter l'analyse
     navigation_section = soup.find("section", class_="unicoach-post-navigation")
-
-    if navigation_section:
-        content_to_analyze = navigation_section.find_previous_siblings()
-    else:
-        content_to_analyze = soup.find_all()
-
     links = set()
 
-    # Analyser uniquement les liens avant la section de navigation
-    for tag in content_to_analyze:
-        if tag.name == "a" and tag.has_attr("href"):
-            href = tag["href"].strip()
+    if navigation_section:
+        # Récupérer tous les éléments avant la section 'unicoach-post-navigation'
+        for element in soup.body.contents:
+            if element == navigation_section:
+                break  # Arrêter l'analyse dès qu'on atteint la section
+            if element.name == "a" and element.has_attr("href"):
+                href = element["href"].strip()
+                if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
+                    links.add(href)
+    else:
+        # Si la section n'existe pas, analyser toute la page
+        for a_tag in soup.find_all("a", href=True):
+            href = a_tag["href"].strip()
             if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
                 links.add(href)
 
@@ -109,8 +112,24 @@ category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.sc
 
 # ✅ Liste complète des URLs à exclure
 excluded_urls = [
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/grammaire-anglais/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/films-series-anglais/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/exercices-anglais/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/vocabulaire-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/certifications-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/formation-anglais/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/livres-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/professionnel/",
+    "https://www.myes.school/fr/magazine/category/exercices-et-grammaire/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/",
+    "https://www.myes.school/fr/magazine/conseils/",
+    "https://www.myes.school/fr/magazine/cpf/",
     "https://www.myes.school/fr/magazine/author/julie/",
+    "https://www.myes.school/fr/magazine/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/culture/",
     "https://www.myes.school/fr/magazine/author/marketing/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/voyages/"
 ]
 
 if st.button("🔍 Lancer l'extraction"):
