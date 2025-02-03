@@ -112,7 +112,7 @@ category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.sc
 
 if st.button("🔍 Lancer l'extraction"):
     with st.spinner("⏳ Extraction en cours..."):
-        articles = fetch_articles(category_url, excluded_urls)
+        articles = fetch_articles(category_url)
 
         if articles:
             st.success(f"✅ {len(articles)} articles trouvés !")  # 🔥 Nombre d'articles affiché en cadre vert
