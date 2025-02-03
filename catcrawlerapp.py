@@ -110,12 +110,6 @@ st.write("Entrez une URL de catégorie (ou de la page principale du magazine) et
 
 category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.school/fr/magazine/")
 
-# ✅ Liste complète des URLs à exclure
-excluded_urls = [
-    "https://www.myes.school/fr/magazine/author/julie/",
-    "https://www.myes.school/fr/magazine/author/marketing/",
-]
-
 if st.button("🔍 Lancer l'extraction"):
     with st.spinner("⏳ Extraction en cours..."):
         articles = fetch_articles(category_url, excluded_urls)
