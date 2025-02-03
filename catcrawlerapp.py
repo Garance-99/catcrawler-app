@@ -68,7 +68,7 @@ def fetch_articles(category_url, excluded_urls):
     print(f"🔍 Extraction terminée. {len(articles)} articles trouvés.")
     return list(articles)
 
-# 🔹 Extraction des liens internes d'un article
+# 🔹 Extraction des liens internes d'un article (avec vérification)
 def fetch_links_from_article(article_url, excluded_urls):
     """🔗 Récupère les liens internes d'un article."""
     soup = get_soup(article_url)
@@ -81,10 +81,15 @@ def fetch_links_from_article(article_url, excluded_urls):
     content_to_analyze = main_content.find_previous_sibling() if main_content else soup
 
     links = set()
-    for a_tag in content_to_analyze.find_all("a", href=True):
-        href = a_tag["href"].strip()
-        if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
-            links.add(href)
+
+    # ✅ Vérification que content_to_analyze n'est pas None avant de parcourir les balises <a>
+    if content_to_analyze:
+        for a_tag in content_to_analyze.find_all("a", href=True):
+            href = a_tag["href"].strip()
+            if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
+                links.add(href)
+    else:
+        print(f"⚠️ Aucun contenu à analyser dans l'article : {article_url}")
 
     print(f"✅ Liens extraits pour {article_url} : {links}")
     return list(links)
