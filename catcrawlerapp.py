@@ -26,7 +26,8 @@ def get_soup(url):
 
 # 🔹 Extraction des articles avec gestion de la page principale
 def fetch_articles(category_url, excluded_urls):
-    """🔍 Récupère les articles d'une catégorie ou de la page principale en analysant toutes ses pages."""
+    """🔍 Récupère les articles d'une catégorie ou de la page principale en analysant toutes ses pages.
+    """
     soup = get_soup(category_url)
     if not soup:
         return []
@@ -68,31 +69,26 @@ def fetch_articles(category_url, excluded_urls):
     print(f"🔍 Extraction terminée. {len(articles)} articles trouvés.")
     return list(articles)
 
-# 🔹 Extraction des liens internes d'un article (avec fallback si la section spécifique est absente)
+# 🔹 Extraction des liens internes d'un article (au-dessus de unicoach-post-navigation)
 def fetch_links_from_article(article_url, excluded_urls):
-    """🔗 Récupère les liens internes d'un article."""
+    """🔗 Récupère les liens internes d'un article situés au-dessus de 'unicoach-post-navigation'.
+    """
     soup = get_soup(article_url)
     if not soup:
         return []
 
     print(f"🔍 Analyse des liens internes de l'article : {article_url}")
 
-    # 🔹 Essayer d'abord de trouver la section spécifique
-    main_content = soup.find("section", class_="unicoach-post-navigation")
-    content_to_analyze = main_content.find_previous_sibling() if main_content else soup
+    # Trouver la section de navigation pour limiter l'analyse
+    navigation_section = soup.find("section", class_="unicoach-post-navigation")
+    content_to_analyze = navigation_section.find_previous_siblings() if navigation_section else soup.find_all()
 
     links = set()
 
-    # 🔹 Analyser le contenu principal ou toute la page si nécessaire
-    if content_to_analyze:
-        for a_tag in content_to_analyze.find_all("a", href=True):
-            href = a_tag["href"].strip()
-            if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
-                links.add(href)
-    else:
-        print(f"⚠️ Aucun contenu spécifique trouvé, analyse de toute la page...")
-        for a_tag in soup.find_all("a", href=True):
-            href = a_tag["href"].strip()
+    # Analyser uniquement les liens avant la section de navigation
+    for tag in content_to_analyze:
+        if tag.name == "a" and tag.has_attr("href"):
+            href = tag["href"].strip()
             if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
                 links.add(href)
 
@@ -109,8 +105,24 @@ category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.sc
 
 # ✅ Liste complète des URLs à exclure
 excluded_urls = [
-    "https://www.myes.school/fr/magazine/category/",
-    "https://www.myes.school/fr/magazine/non-classifiee/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/grammaire-anglais/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/films-series-anglais/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/exercices-anglais/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/vocabulaire-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/certifications-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/formation-anglais/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/livres-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/professionnel/",
+    "https://www.myes.school/fr/magazine/category/exercices-et-grammaire/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/",
+    "https://www.myes.school/fr/magazine/conseils/",
+    "https://www.myes.school/fr/magazine/cpf/",
+    "https://www.myes.school/fr/magazine/author/julie/",
+    "https://www.myes.school/fr/magazine/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/culture/",
+    "https://www.myes.school/fr/magazine/author/marketing/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/voyages/"
 ]
 
 if st.button("🔍 Lancer l'extraction"):
