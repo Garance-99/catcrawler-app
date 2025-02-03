@@ -10,7 +10,9 @@ def get_soup(url):
     print(f"🌍 Chargement de {url}...")
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
     }
 
     try:
@@ -79,12 +81,16 @@ def fetch_links_from_article(article_url, excluded_urls):
 
     print(f"🔍 Analyse des liens internes de l'article : {article_url}")
 
-    # Trouver la section de navigation pour limiter l'analyse
+    # Vérification de la structure de la page
     navigation_section = soup.find("section", class_="unicoach-post-navigation")
+    if navigation_section:
+        print(f"✅ Section 'unicoach-post-navigation' trouvée dans {article_url}")
+    else:
+        print(f"⚠️ Section 'unicoach-post-navigation' NON trouvée dans {article_url}, analyse de toute la page...")
+
     links = set()
 
     if navigation_section:
-        # Récupérer tous les éléments avant la section 'unicoach-post-navigation'
         for element in soup.body.contents:
             if element == navigation_section:
                 break  # Arrêter l'analyse dès qu'on atteint la section
@@ -93,7 +99,6 @@ def fetch_links_from_article(article_url, excluded_urls):
                 if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
                     links.add(href)
     else:
-        # Si la section n'existe pas, analyser toute la page
         for a_tag in soup.find_all("a", href=True):
             href = a_tag["href"].strip()
             if href.startswith("https://www.myes.school/fr/magazine/") and href not in excluded_urls:
@@ -110,9 +115,31 @@ st.write("Entrez une URL de catégorie (ou de la page principale du magazine) et
 
 category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.school/fr/magazine/")
 
+# ✅ Liste complète des URLs à exclure
+excluded_urls = [
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/grammaire-anglais/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/films-series-anglais/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/exercices-anglais/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/vocabulaire-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/certifications-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/formation-anglais/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/livres-anglais/",
+    "https://www.myes.school/fr/magazine/conseils/professionnel/",
+    "https://www.myes.school/fr/magazine/category/exercices-et-grammaire/",
+    "https://www.myes.school/fr/magazine/exercices-et-grammaire/",
+    "https://www.myes.school/fr/magazine/conseils/",
+    "https://www.myes.school/fr/magazine/cpf/",
+    "https://www.myes.school/fr/magazine/author/julie/",
+    "https://www.myes.school/fr/magazine/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/culture/",
+    "https://www.myes.school/fr/magazine/author/marketing/",
+    "https://www.myes.school/fr/magazine/tourisme-et-culture/voyages/"
+]
+
 if st.button("🔍 Lancer l'extraction"):
     with st.spinner("⏳ Extraction en cours..."):
-        articles = fetch_articles(category_url)
+        articles = fetch_articles(category_url, excluded_urls)
 
         if articles:
             st.success(f"✅ {len(articles)} articles trouvés !")  # 🔥 Nombre d'articles affiché en cadre vert
