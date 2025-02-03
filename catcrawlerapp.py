@@ -112,24 +112,8 @@ category_url = st.text_input("📌 URL de la catégorie :", "https://www.myes.sc
 
 # ✅ Liste complète des URLs à exclure
 excluded_urls = [
-    "https://www.myes.school/fr/magazine/tourisme-et-culture/",
-    "https://www.myes.school/fr/magazine/exercices-et-grammaire/grammaire-anglais/",
-    "https://www.myes.school/fr/magazine/tourisme-et-culture/films-series-anglais/",
-    "https://www.myes.school/fr/magazine/exercices-et-grammaire/exercices-anglais/",
-    "https://www.myes.school/fr/magazine/exercices-et-grammaire/vocabulaire-anglais/",
-    "https://www.myes.school/fr/magazine/conseils/certifications-anglais/",
-    "https://www.myes.school/fr/magazine/conseils/formation-anglais/",
-    "https://www.myes.school/fr/magazine/tourisme-et-culture/livres-anglais/",
-    "https://www.myes.school/fr/magazine/conseils/professionnel/",
-    "https://www.myes.school/fr/magazine/category/exercices-et-grammaire/",
-    "https://www.myes.school/fr/magazine/exercices-et-grammaire/",
-    "https://www.myes.school/fr/magazine/conseils/",
-    "https://www.myes.school/fr/magazine/cpf/",
     "https://www.myes.school/fr/magazine/author/julie/",
-    "https://www.myes.school/fr/magazine/",
-    "https://www.myes.school/fr/magazine/tourisme-et-culture/culture/",
     "https://www.myes.school/fr/magazine/author/marketing/",
-    "https://www.myes.school/fr/magazine/tourisme-et-culture/voyages/"
 ]
 
 if st.button("🔍 Lancer l'extraction"):
